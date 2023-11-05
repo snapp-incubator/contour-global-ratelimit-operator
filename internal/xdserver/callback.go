@@ -2,7 +2,6 @@ package xdserver
 
 import (
 	"context"
-	"log"
 	"sync"
 
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -25,28 +24,28 @@ var _ server.Callbacks = &Callbacks{}
 func (cb *Callbacks) Report() {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
-	log.Printf("server callbacks fetches=%d requests=%d\n", cb.Fetches, cb.Requests)
+	logger.Infof("server callbacks fetches=%d requests=%d\n", cb.Fetches, cb.Requests)
 }
 func (cb *Callbacks) OnStreamOpen(_ context.Context, id int64, typ string) error {
 	if cb.Debug {
-		log.Printf("stream %d open for %s\n", id, typ)
+		logger.Infof("stream %d open for %s\n", id, typ)
 	}
 	return nil
 }
 func (cb *Callbacks) OnStreamClosed(id int64, node *core.Node) {
 	if cb.Debug {
-		log.Printf("stream %d of node %s closed\n", id, node.Id)
+		logger.Infof("stream %d of node %s closed\n", id, node.Id)
 	}
 }
 func (cb *Callbacks) OnDeltaStreamOpen(_ context.Context, id int64, typ string) error {
 	if cb.Debug {
-		log.Printf("delta stream %d open for %s\n", id, typ)
+		logger.Infof("delta stream %d open for %s\n", id, typ)
 	}
 	return nil
 }
 func (cb *Callbacks) OnDeltaStreamClosed(id int64, node *core.Node) {
 	if cb.Debug {
-		log.Printf("delta stream %d of node %s closed\n", id, node.Id)
+		logger.Infof("delta stream %d of node %s closed\n", id, node.Id)
 	}
 }
 func (cb *Callbacks) OnStreamRequest(int64, *discovery.DiscoveryRequest) error {

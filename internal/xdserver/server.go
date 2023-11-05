@@ -21,8 +21,20 @@ const (
 	grpcMaxConcurrentStreams = 1000000
 )
 
+var (
+	logger   Logger
+	Port     int
+	NodeID   string
+	DebugLog bool
+)
+
+func init() {
+	logger = Logger{}
+}
+
 // RunServer starts an xDS server at the given port.
 func RunServer() {
+	logger.Debug = DebugLog
 	ctx := context.Background()
 	cb := &Callbacks{Debug: logger.Debug}
 	srv := server.NewServer(ctx, snapshotCache, cb)
@@ -39,14 +51,14 @@ func RunServer() {
 		}),
 	)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", Port))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	discovery.RegisterAggregatedDiscoveryServiceServer(grpcServer, srv)
 
-	log.Printf("Management server listening on %d\n", port)
+	logger.Infof("XDS server listening on %d\n", Port)
 	if err = grpcServer.Serve(lis); err != nil {
 		log.Println(err)
 	}

@@ -46,9 +46,6 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(contourv1.AddToScheme(scheme))
-
-	go xdserver.RunServer()
-
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -56,6 +53,9 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	flag.BoolVar(&xdserver.DebugLog, "xds-server-debug-log", false, "Turn On XDS Debug logs")
+	flag.StringVar(&xdserver.NodeID, "xds-server-node-id", "test-node-id", "The XDS Server Node ID")
+	flag.IntVar(&xdserver.Port, "xds-server-port", 18000, "The XDS Server Port")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8083", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -113,6 +113,7 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
+	go xdserver.RunServer()
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
