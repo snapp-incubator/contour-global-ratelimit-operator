@@ -163,7 +163,7 @@ func extractDescriptorsFromRemoteAddress(addresse contourv1.RemoteAddressDescrip
 func generateRateLimitFromGenericKeyValue(value string, name string, namespace string) (RateLimit, error) {
 	valParts := strings.Split(value, "/")
 	if len(valParts) != 2 {
-		return RateLimit{}, fmt.Errorf("%v invalid format in value ns: %v", name, namespace)
+		return RateLimit{}, fmt.Errorf("value %v invalid format", value)
 	}
 	requestsPerUnit, err := strconv.ParseUint(valParts[0], 10, 32)
 	if err != nil {
