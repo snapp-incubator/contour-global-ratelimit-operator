@@ -28,10 +28,6 @@ var (
 	DebugLog bool
 )
 
-func init() {
-	logger = Logger{}
-}
-
 // RunServer starts an xDS server at the given port.
 func RunServer() {
 	logger.Debug = DebugLog
@@ -58,7 +54,7 @@ func RunServer() {
 
 	discovery.RegisterAggregatedDiscoveryServiceServer(grpcServer, srv)
 
-	logger.Infof("XDS server listening on %d\n", Port)
+	logger.Infof("XDS server listening on %d for NodeID %v\n", Port, NodeID)
 	if err = grpcServer.Serve(lis); err != nil {
 		log.Println(err)
 	}

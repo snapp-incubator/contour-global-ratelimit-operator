@@ -54,7 +54,7 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	flag.BoolVar(&xdserver.DebugLog, "xds-server-debug-log", false, "Turn On XDS Debug logs")
-	flag.StringVar(&xdserver.NodeID, "xds-server-node-id", "test-node-id", "The XDS Server Node ID")
+	flag.StringVar(&xdserver.NodeID, "xds-node-id", "default", "The XDS Node ID")
 	flag.IntVar(&xdserver.Port, "xds-server-port", 18000, "The XDS Server Port")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8083", "The address the probe endpoint binds to.")
