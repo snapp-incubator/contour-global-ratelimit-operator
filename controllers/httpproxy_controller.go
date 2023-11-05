@@ -43,16 +43,6 @@ type HTTPProxyReconciler struct {
 //+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies/finalizers,verbs=update
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the HTTPProxy object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
-
 func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
@@ -66,12 +56,12 @@ func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	}
 	if strings.ToLower(httproxy.Status.CurrentStatus) == "valid" {
-		has, globalRateLimitPolicy, err := parser.ExtractDescriptorsFromHTTPProxy(httproxy)
+		hasGlobalRateLimitPolicy, globalRateLimitPolicy, err := parser.ExtractDescriptorsFromHTTPProxy(httproxy)
 		if err != nil {
 			logger.Info(err.Error())
 		}
-		if has {
-			logger.Info(fmt.Sprintf("successfully added to the xds server. snapShotVersion: %v", snapShotVersion))
+		if hasGlobalRateLimitPolicy {
+			logger.Info("successfully added to the xds server", "snapShotVersion", snapShotVersion)
 			parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy)
 			xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
 			snapShotVersion++
