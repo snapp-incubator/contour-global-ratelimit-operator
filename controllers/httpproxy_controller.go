@@ -23,6 +23,7 @@ import (
 	contourv1 "github.com/projectcontour/contour/apis/projectcontour/v1"
 	"github.com/snapp-incubator/contour-global-ratelimit-operator/internal/parser"
 	"github.com/snapp-incubator/contour-global-ratelimit-operator/internal/xdserver"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -55,7 +56,14 @@ func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	loger := log.FromContext(ctx)
 
 	httproxy := &contourv1.HTTPProxy{}
-	r.Get(ctx, req.NamespacedName, httproxy)
+	getErr := r.Get(ctx, req.NamespacedName, httproxy)
+	if getErr != nil && errors.IsNotFound(getErr) {
+		return ctrl.Result{}, nil
+	} else if getErr != nil {
+		loger.Error(getErr, "Error getting operator resource object")
+		return ctrl.Result{}, getErr
+
+	}
 	//Todo: check if httpproxy status is valid or not
 	has, globalRateLimitPolicy, err := parser.ExtractDescriptorsFromHTTPProxy(httproxy)
 	if err != nil {
