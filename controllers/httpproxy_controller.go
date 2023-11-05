@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	contourv1 "github.com/projectcontour/contour/apis/projectcontour/v1"
 	"github.com/snapp-incubator/contour-global-ratelimit-operator/internal/parser"
@@ -53,29 +54,29 @@ type HTTPProxyReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 
 func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	loger := log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 
 	httproxy := &contourv1.HTTPProxy{}
 	getErr := r.Get(ctx, req.NamespacedName, httproxy)
 	if getErr != nil && errors.IsNotFound(getErr) {
 		return ctrl.Result{}, nil
 	} else if getErr != nil {
-		loger.Error(getErr, "Error getting operator resource object")
+		logger.Error(getErr, "Error getting operator resource object")
 		return ctrl.Result{}, getErr
 
 	}
-	//Todo: check if httpproxy status is valid or not
-	has, globalRateLimitPolicy, err := parser.ExtractDescriptorsFromHTTPProxy(httproxy)
-	if err != nil {
-		loger.Info(err.Error())
+	if strings.ToLower(httproxy.Status.CurrentStatus) == "valid" {
+		has, globalRateLimitPolicy, err := parser.ExtractDescriptorsFromHTTPProxy(httproxy)
+		if err != nil {
+			logger.Info(err.Error())
+		}
+		if has {
+			logger.Info(fmt.Sprintf("successfully added to the xds server. snapShotVersion: %v", snapShotVersion))
+			parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy)
+			xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
+			snapShotVersion++
+		}
 	}
-	if has {
-		loger.Info(fmt.Sprintf("successfully added to the xds server. snapShotVersion: %v", snapShotVersion))
-		parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy)
-		xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
-		snapShotVersion++
-	}
-
 	return ctrl.Result{}, nil
 }
 
