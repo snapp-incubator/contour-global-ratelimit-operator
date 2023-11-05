@@ -138,7 +138,7 @@ func extractDescriptorFromGenericKey(genericKey *contourv1.GenericKeyDescriptor,
 	}, limit, nil
 }
 func isGenericKeyContaineName_Namespace(key string, name string, namespace string) bool {
-	return strings.HasPrefix(key, fmt.Sprintf("%v_%v_", namespace, name))
+	return strings.HasPrefix(key, fmt.Sprintf("%v.%v.", namespace, name))
 }
 
 func extractDescriptorFromRequestHeader(requestHeader *contourv1.RequestHeaderDescriptor) (Descriptor, error) {
