@@ -66,5 +66,5 @@ func CreateNewSnapshot() {
 		logger.Errorf("Snapshot error %q for %+v", err, snapshot)
 		os.Exit(1)
 	}
-	logger.Infof("New version of Snapshot Created: ", version)
+	logger.Infof("New version of Snapshot is Created: ", version)
 }
