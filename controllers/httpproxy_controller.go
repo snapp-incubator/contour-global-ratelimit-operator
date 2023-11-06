@@ -43,13 +43,15 @@ type HTTPProxyReconciler struct {
 //+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies/status,verbs=get;
 //+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies/finalizers,verbs=update
 
+// Reconcile is part of the main kubernetes reconciliation loop which aims to
+// move the current state of the cluster closer to the desired state.
 func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	httproxy := &contourv1.HTTPProxy{}
 	getErr := r.Get(ctx, req.NamespacedName, httproxy)
 	if getErr != nil && errors.IsNotFound(getErr) {
-		if is_deleted := parser.ContourLimitConfigs.Delete(req.Namespace, req.Name); is_deleted {
+		if isDeleted := parser.ContourLimitConfigs.Delete(req.Namespace, req.Name); isDeleted {
 			xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
 			snapShotVersion++
 			logger.Info("object is deleted from xds server", "snapShotVersion", snapShotVersion)
@@ -69,7 +71,9 @@ func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 		if hasGlobalRateLimitPolicy {
 			logger.Info("successfully added to the xds server", "snapShotVersion", snapShotVersion)
-			parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy)
+			if adderr := parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy); adderr != nil {
+				logger.Info(adderr.Error())
+			}
 			xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
 			snapShotVersion++
 		}

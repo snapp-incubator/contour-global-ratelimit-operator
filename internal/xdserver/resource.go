@@ -10,17 +10,18 @@ import (
 	"github.com/snapp-incubator/contour-global-ratelimit-operator/internal/parser"
 )
 
-func makeRlsConfig() []types.Resource {
+// MakeRlsConfig creates rate limit config resources.
+func MakeRlsConfig() []types.Resource {
 	return []types.Resource{
 		parser.ContourLimitConfigs.GetConfigs(),
 	}
-
 }
 
+// GenerateSnapshot generates an xDS snapshot for the given version.
 func GenerateSnapshot(version string) *cache.Snapshot {
 	snap, _ := cache.NewSnapshot(version,
 		map[resource.Type][]types.Resource{
-			resource.RateLimitConfigType: makeRlsConfig(),
+			resource.RateLimitConfigType: MakeRlsConfig(),
 		},
 	)
 	return snap
@@ -28,16 +29,18 @@ func GenerateSnapshot(version string) *cache.Snapshot {
 
 var snapshotCache = cache.NewSnapshotCache(true, cache.IDHash{}, logger)
 
+// CreateNewSnapshot creates and serves a new snapshot.
 func CreateNewSnapshot(version string) {
-
-	// Create a snapshotCache
-
+	// Generate a snapshot
 	snapshot := GenerateSnapshot(version)
+
+	// Check if the snapshot is empty for "contour"
 	if m := snapshot.GetResources(resource.RateLimitConfigType); m["contour"] == nil {
 		logger.Errorf("Snapshot is empty for : %+v\n%+v", NodeID)
 		return
-
 	}
+
+	// Check if the snapshot is consistent
 	if err := snapshot.Consistent(); err != nil {
 		logger.Errorf("Snapshot is inconsistent: %+v\n%+v", snapshot, err)
 		os.Exit(1)
@@ -50,5 +53,4 @@ func CreateNewSnapshot(version string) {
 		logger.Errorf("Snapshot error %q for %+v", err, snapshot)
 		os.Exit(1)
 	}
-
 }

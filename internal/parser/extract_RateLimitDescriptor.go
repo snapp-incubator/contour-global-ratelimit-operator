@@ -8,6 +8,7 @@ import (
 	contourv1 "github.com/projectcontour/contour/apis/projectcontour/v1"
 )
 
+// HTTPProxyGlobalRateLimitPolicy represents a global rate limit policy.
 type HTTPProxyGlobalRateLimitPolicy struct {
 	Name                  string
 	Namespace             string
@@ -15,6 +16,7 @@ type HTTPProxyGlobalRateLimitPolicy struct {
 	RateLimitsDescriptors []Descriptor
 }
 
+// Descriptor represents a rate limit descriptor.
 type Descriptor struct {
 	Key         string
 	Value       string
@@ -23,6 +25,7 @@ type Descriptor struct {
 	Descriptors []Descriptor
 }
 
+// RateLimit represents rate limit details.
 type RateLimit struct {
 	Unit            string
 	RequestsPerUnit string
@@ -48,15 +51,13 @@ func ExtractDescriptorsFromHTTPProxy(httpProxy *contourv1.HTTPProxy) (hasRateLim
 			}
 			// Append the extracted descriptors to the global rate limit policy
 			globalRateLimitPolicy.RateLimitsDescriptors = append(globalRateLimitPolicy.RateLimitsDescriptors, descriptors...)
-
 		}
 	}
 
 	return hasRateLimitConfig, globalRateLimitPolicy, err
-
-	//return false, HTTPProxyGlobalRateLimitPolicy{}, err
 }
 
+// extractDescriptorsFromGlobalRateLimitPolicy extracts descriptors from a GlobalRateLimitPolicy.
 func extractDescriptorsFromGlobalRateLimitPolicy(policy *contourv1.GlobalRateLimitPolicy, name string, namespace string) ([]Descriptor, error) {
 	var descriptors []Descriptor
 	for _, contourDescriptor := range policy.Descriptors {
@@ -65,31 +66,28 @@ func extractDescriptorsFromGlobalRateLimitPolicy(policy *contourv1.GlobalRateLim
 		for i, entry := range contourDescriptor.Entries {
 			descriptor, rateLimit, err := extractDescriptorFromEntry(entry, name, namespace)
 			if err != nil {
-				//log.Println("line 78#####", err, entry.GenericKey)
-				//continue
 				return descriptors, err
 			}
 			if i == 0 {
 				limit = rateLimit
 				entryDescriptor = descriptor
-				//first entry must be genricKey and also maybe dosn't have second entry
+				// The first entry must be a genericKey and may not have a second entry.
 				if len(contourDescriptor.Entries) == 1 && entry.GenericKey != nil {
 					entryDescriptor.RateLimit = limit
 					descriptors = append(descriptors, entryDescriptor)
 				}
 			}
-			//Todo: Add name_namspace validation here
 			if i == 1 && entryDescriptor.Key != "" {
 				descriptor.RateLimit = limit
 				entryDescriptor.Descriptors = append(entryDescriptor.Descriptors, descriptor)
 				descriptors = append(descriptors, entryDescriptor)
 			}
-
 		}
 	}
 	return descriptors, nil
 }
 
+// extractDescriptorFromEntry extracts a descriptor and rate limit from a RateLimitDescriptorEntry.
 func extractDescriptorFromEntry(entry contourv1.RateLimitDescriptorEntry, name string, namespace string) (Descriptor, RateLimit, error) {
 	switch {
 	case entry.GenericKey != nil:
@@ -121,14 +119,15 @@ func extractDescriptorFromEntry(entry contourv1.RateLimitDescriptorEntry, name s
 	}
 }
 
-func extractDescriptorFromGenericKey(genericKey *contourv1.GenericKeyDescriptor, name string, namepsace string) (Descriptor, RateLimit, error) {
+// extractDescriptorFromGenericKey extracts a descriptor and rate limit from a GenericKeyDescriptor.
+func extractDescriptorFromGenericKey(genericKey *contourv1.GenericKeyDescriptor, name string, namespace string) (Descriptor, RateLimit, error) {
 	key := genericKey.Key
 	val := genericKey.Value
-	if !isGenericKeyContaineName_Namespace(key, name, namepsace) {
+	if !isGenericKeyContainNameNamespace(key, name, namespace) {
 		err := fmt.Errorf("%v is not valid", key)
 		return Descriptor{}, RateLimit{}, err
 	}
-	limit, err := generateRateLimitFromGenericKeyValue(val, name, namepsace)
+	limit, err := generateRateLimitFromGenericKeyValue(val, name, namespace)
 	if err != nil {
 		return Descriptor{}, RateLimit{}, err
 	}
@@ -137,33 +136,40 @@ func extractDescriptorFromGenericKey(genericKey *contourv1.GenericKeyDescriptor,
 		Value: val,
 	}, limit, nil
 }
-func isGenericKeyContaineName_Namespace(key string, name string, namespace string) bool {
+
+// isGenericKeyContainNameNamespace checks if a key contains the specified name and namespace.
+func isGenericKeyContainNameNamespace(key string, name string, namespace string) bool {
 	return strings.HasPrefix(key, fmt.Sprintf("%v.%v.", namespace, name))
 }
 
+// extractDescriptorFromRequestHeader extracts a descriptor from a RequestHeaderDescriptor.
 func extractDescriptorFromRequestHeader(requestHeader *contourv1.RequestHeaderDescriptor) (Descriptor, error) {
 	key := requestHeader.DescriptorKey
 	return Descriptor{
 		Key: key,
 	}, nil
 }
-func extractDescriptorFromRequestHeaderValueMatch(headerValueMattch *contourv1.RequestHeaderValueMatchDescriptor) (Descriptor, error) {
 
+// extractDescriptorFromRequestHeaderValueMatch extracts a descriptor from a RequestHeaderValueMatchDescriptor.
+func extractDescriptorFromRequestHeaderValueMatch(headerValueMatch *contourv1.RequestHeaderValueMatchDescriptor) (Descriptor, error) {
 	return Descriptor{
 		Key:   "header_match",
-		Value: headerValueMattch.Value,
+		Value: headerValueMatch.Value,
 	}, nil
 }
-func extractDescriptorsFromRemoteAddress(addresse contourv1.RemoteAddressDescriptor) (Descriptor, error) {
+
+// extractDescriptorsFromRemoteAddress extracts a descriptor from a RemoteAddressDescriptor.
+func extractDescriptorsFromRemoteAddress(address contourv1.RemoteAddressDescriptor) (Descriptor, error) {
 	return Descriptor{
 		Key: "remote_address",
 	}, nil
 }
 
+// generateRateLimitFromGenericKeyValue generates a RateLimit from a generic key value.
 func generateRateLimitFromGenericKeyValue(value string, name string, namespace string) (RateLimit, error) {
 	valParts := strings.Split(value, "/")
 	if len(valParts) != 2 {
-		return RateLimit{}, fmt.Errorf("value %v invalid format", value)
+		return RateLimit{}, fmt.Errorf("value %v has an invalid format", value)
 	}
 	requestsPerUnit, err := strconv.ParseUint(valParts[0], 10, 32)
 	if err != nil {

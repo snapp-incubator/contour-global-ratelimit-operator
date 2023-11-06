@@ -22,9 +22,12 @@ const (
 )
 
 var (
-	logger   Logger
-	Port     int
-	NodeID   string
+	logger Logger
+	//Port is XDS server Port.
+	Port int
+	//NodeID is ID of RLS server.
+	NodeID string
+	//DebugLog is switch for enabeling debug log of xds server.
 	DebugLog bool
 )
 
@@ -49,13 +52,13 @@ func RunServer() {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", Port))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to listen: %v", err)
 	}
 
 	discovery.RegisterAggregatedDiscoveryServiceServer(grpcServer, srv)
 
 	logger.Infof("XDS server listening on %d for NodeID %v\n", Port, NodeID)
 	if err = grpcServer.Serve(lis); err != nil {
-		log.Println(err)
+		log.Fatalf("Server error: %v", err)
 	}
 }

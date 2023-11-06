@@ -7,6 +7,7 @@ import (
 	rls_config "github.com/envoyproxy/go-control-plane/ratelimit/config/ratelimit/v3"
 )
 
+// convertToRateLimitDescriptors converts a slice of localDescriptors to a slice of RateLimitDescriptors.
 func convertToRateLimitDescriptors(localDescriptors []Descriptor) []*rls_config.RateLimitDescriptor {
 	descriptors := make([]*rls_config.RateLimitDescriptor, len(localDescriptors))
 
@@ -17,6 +18,7 @@ func convertToRateLimitDescriptors(localDescriptors []Descriptor) []*rls_config.
 	return descriptors
 }
 
+// convertToRateLimitDescriptor converts a localDescriptor to a RateLimitDescriptor.
 func convertToRateLimitDescriptor(localDescriptor Descriptor) *rls_config.RateLimitDescriptor {
 	// Helper function to convert a RateLimit struct to a RateLimitPolicy struct
 	convertRateLimit := func(r RateLimit) *rls_config.RateLimitPolicy {
