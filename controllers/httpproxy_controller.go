@@ -49,6 +49,13 @@ func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	httproxy := &contourv1.HTTPProxy{}
 	getErr := r.Get(ctx, req.NamespacedName, httproxy)
 	if getErr != nil && errors.IsNotFound(getErr) {
+		if is_deleted := parser.ContourLimitConfigs.Delete(req.Namespace, req.Name); is_deleted {
+			xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
+			snapShotVersion++
+			logger.Info("object is deleted from xds server", "snapShotVersion", snapShotVersion)
+
+		}
+
 		return ctrl.Result{}, nil
 	} else if getErr != nil {
 		logger.Error(getErr, "Error getting operator resource object")

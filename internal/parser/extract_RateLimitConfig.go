@@ -54,6 +54,18 @@ func (a *LimitConfigs) AddToConfig(policy HTTPProxyGlobalRateLimitPolicy) error 
 	//fmt.Println(string(yml))
 	return nil
 }
+func (a *LimitConfigs) Delete(namespace string, name string) (deleted bool) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	for _, d := range a.descriptorMaps {
+		if isGenericKeyContaineName_Namespace(d.Key, name, namespace) {
+			delete(a.descriptorMaps, d.Key)
+			deleted = true
+
+		}
+	}
+	return deleted
+}
 func (a *LimitConfigs) setDomain(name string) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()

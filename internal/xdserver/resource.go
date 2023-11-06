@@ -33,6 +33,11 @@ func CreateNewSnapshot(version string) {
 	// Create a snapshotCache
 
 	snapshot := GenerateSnapshot(version)
+	if m := snapshot.GetResources(resource.RateLimitConfigType); m["contour"] == nil {
+		logger.Errorf("Snapshot is empty for : %+v\n%+v", NodeID)
+		return
+
+	}
 	if err := snapshot.Consistent(); err != nil {
 		logger.Errorf("Snapshot is inconsistent: %+v\n%+v", snapshot, err)
 		os.Exit(1)
