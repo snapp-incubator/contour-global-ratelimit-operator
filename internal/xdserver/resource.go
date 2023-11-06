@@ -2,7 +2,9 @@ package xdserver
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"sync"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
@@ -28,9 +30,20 @@ func GenerateSnapshot(version string) *cache.Snapshot {
 }
 
 var snapshotCache = cache.NewSnapshotCache(true, cache.IDHash{}, logger)
+var snapShotVersion int
+var snapShotMutex sync.Mutex
 
 // CreateNewSnapshot creates and serves a new snapshot.
-func CreateNewSnapshot(version string) {
+func CreateNewSnapshot() {
+	version := func() (version string) {
+		snapShotMutex.Lock()
+		snapShotVersion++
+		version = fmt.Sprint(snapShotVersion)
+		snapShotMutex.Unlock()
+		return
+
+	}()
+
 	// Generate a snapshot
 	snapshot := GenerateSnapshot(version)
 
@@ -53,4 +66,5 @@ func CreateNewSnapshot(version string) {
 		logger.Errorf("Snapshot error %q for %+v", err, snapshot)
 		os.Exit(1)
 	}
+	logger.Infof("New version of Snapshot Created: ", version)
 }

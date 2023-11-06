@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	contourv1 "github.com/projectcontour/contour/apis/projectcontour/v1"
@@ -30,8 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
-
-var snapShotVersion int
 
 // HTTPProxyReconciler reconciles a HTTPProxy object
 type HTTPProxyReconciler struct {
@@ -52,9 +49,8 @@ func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	getErr := r.Get(ctx, req.NamespacedName, httproxy)
 	if getErr != nil && errors.IsNotFound(getErr) {
 		if isDeleted := parser.ContourLimitConfigs.Delete(req.Namespace, req.Name); isDeleted {
-			xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
-			snapShotVersion++
-			logger.Info("object is deleted from xds server", "snapShotVersion", snapShotVersion)
+			xdserver.CreateNewSnapshot()
+			logger.Info("object is deleted from xds server")
 
 		}
 
@@ -70,12 +66,11 @@ func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			logger.Info(err.Error())
 		}
 		if hasGlobalRateLimitPolicy {
-			logger.Info("successfully added to the xds server", "snapShotVersion", snapShotVersion)
+			logger.Info("successfully added to the xds server")
 			if addErr := parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy); addErr != nil {
 				logger.Info(addErr.Error())
 			}
-			xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
-			snapShotVersion++
+			xdserver.CreateNewSnapshot()
 		}
 	}
 	return ctrl.Result{}, nil
