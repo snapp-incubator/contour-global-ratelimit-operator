@@ -39,8 +39,8 @@ type HTTPProxyReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies,verbs=get;list;watch;update;patch;
-//+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies,verbs=get;list;watch;
+//+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies/status,verbs=get;
 //+kubebuilder:rbac:groups=projectcontour.io,resources=httpproxies/finalizers,verbs=update
 
 func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
