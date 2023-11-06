@@ -36,7 +36,7 @@ spec:
         descriptors:
           - entries:
              - genericKey:
-                key: test.echo.limit1
+                key: test.echo.limit1 # Namespace.Name.optional_Name
                 value: "3/m"
              - requestHeaderValueMatch:
                  headers:
@@ -45,14 +45,14 @@ spec:
                  value: bar  
           - entries:
              - genericKey:
-                key: test.echo.limit2
+                key: test.echo.limit2 # Namespace.Name.optional_Name
                 value: "4/m"
              - requestHeader:
                   headerName: id
                   descriptorKey: id
           - entries:
               - genericKey:
-                  key: test.echo.limit3
+                  key: test.echo.limit3 # Namespace.Name.optional_Name
                   value: "30/m"
 ```
 
