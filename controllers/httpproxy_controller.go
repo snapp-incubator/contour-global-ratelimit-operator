@@ -71,8 +71,8 @@ func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 		if hasGlobalRateLimitPolicy {
 			logger.Info("successfully added to the xds server", "snapShotVersion", snapShotVersion)
-			if adderr := parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy); adderr != nil {
-				logger.Info(adderr.Error())
+			if addErr := parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy); addErr != nil {
+				logger.Info(addErr.Error())
 			}
 			xdserver.CreateNewSnapshot(fmt.Sprint(snapShotVersion))
 			snapShotVersion++
