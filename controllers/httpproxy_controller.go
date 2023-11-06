@@ -60,19 +60,24 @@ func (r *HTTPProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, getErr
 
 	}
-	if strings.ToLower(httproxy.Status.CurrentStatus) == "valid" {
-		hasGlobalRateLimitPolicy, globalRateLimitPolicy, err := parser.ExtractDescriptorsFromHTTPProxy(httproxy)
-		if err != nil {
-			logger.Info(err.Error())
-		}
-		if hasGlobalRateLimitPolicy {
-			logger.Info("successfully added to the xds server")
-			if addErr := parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy); addErr != nil {
-				logger.Info(addErr.Error())
-			}
+	if strings.ToLower(httproxy.Status.CurrentStatus) != "valid" {
+		return ctrl.Result{}, nil
+	}
+	hasGlobalRateLimitPolicy, globalRateLimitPolicy, err := parser.ExtractDescriptorsFromHTTPProxy(httproxy)
+	if err != nil {
+		logger.Info(err.Error())
+	}
+	if hasGlobalRateLimitPolicy {
+
+		if addErr := parser.ContourLimitConfigs.AddToConfig(globalRateLimitPolicy); addErr != nil {
+			logger.Info(addErr.Error())
+		} else {
 			xdserver.CreateNewSnapshot()
+			logger.Info("successfully added to the xds server")
+
 		}
 	}
+
 	return ctrl.Result{}, nil
 }
 
