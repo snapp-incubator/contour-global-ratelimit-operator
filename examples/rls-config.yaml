@@ -1,0 +1,26 @@
+name: contour
+domain: contour
+descriptors:
+    - key: test.echo.limit1
+      value: 3/m
+      descriptors:
+        - key: header_match
+          value: bar
+          ratelimit:
+            unit: minute
+            requestsperunit: 3
+            unlimited: false
+    - key: test.echo.limit2
+      value: 4/m
+      descriptors:
+        - key: id
+          value: ""
+          ratelimit:
+            unit: minute
+            requestsperunit: 4
+            unlimited: false
+    - key: test.echo.limit3
+      value: 30/m
+      ratelimit:
+        unit: minute
+        requestsperunit: 30

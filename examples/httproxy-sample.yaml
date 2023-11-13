@@ -1,0 +1,45 @@
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: echo
+  namespace: test
+spec:
+  ingressClassName: private
+  virtualhost:
+    fqdn: my-test.example.com
+  routes:
+  - conditions:
+    - prefix: /
+    services:
+    - name: ingress-conformance-echo
+      port: 80
+    rateLimitPolicy:
+      global:
+        descriptors:
+# limit all requests which have header foo: bar (3 rpm)
+          - entries:
+             - genericKey:
+                key: test.echo.limit1
+                value: "3/m"
+             - requestHeaderValueMatch:
+                 headers:
+                 - name: foo
+                   exact: bar
+                 value: bar  
+
+                 
+# limit all request which have header id: <sth> per value (3 rpm)
+          - entries:
+             - genericKey:
+                key: test.echo.limit2
+                value: "4/m"
+             - requestHeader:
+                  headerName: id
+                  descriptorKey: id
+
+# limit all requests for a specific routes for 30 rpm
+          - entries:
+              - genericKey:
+                  key: test.echo.limit3
+                  value: "30/m"
+
