@@ -31,8 +31,8 @@ controllerManager:
         drop:
         - ALL
     image:
-      repository: controller
-      tag: latest
+      repository: ghcr.io/snapp-incubator/contour-global-ratelimit-operator
+      tag: main
     resources:
       limits:
         cpu: 500m
@@ -40,9 +40,15 @@ controllerManager:
       requests:
         cpu: 10m
         memory: 64Mi
+  ports:
+  - name: xds
+    port: 18000
+    protocol: TCP
+    targetPort: xds
   replicas: 1
   serviceAccount:
     annotations: {}
+  type: ClusterIP
 kubernetesClusterDomain: cluster.local
 metricsService:
   ports:
