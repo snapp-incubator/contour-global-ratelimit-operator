@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rls-operator.fullname" . }}-controller-manager
+  labels:
+    app.kubernetes.io/created-by: contour-global-ratelimit-operator
+    app.kubernetes.io/part-of: contour-global-ratelimit-operator
+    control-plane: controller-manager
+  {{- include "rls-operator.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.controllerManager.type }}
+  selector:
+    control-plane: controller-manager
+  {{- include "rls-operator.selectorLabels" . | nindent 4 }}
+  ports:
+	{{- .Values.controllerManager.ports | toYaml | nindent 2 -}}
