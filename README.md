@@ -1,5 +1,5 @@
 
-# Contour Global Rate Limit Operator
+# Contour Global Rate Limit Operator.
 
 ## Description
 
