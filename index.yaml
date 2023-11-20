@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  rls-operator:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-11-20T09:53:40.086526714Z"
+    description: A Helm chart for Kubernetes
+    digest: 408f3fddeffd776983a72d51bf678d5d16a54c9cc6ccfb3c91eb4e530df51772
+    name: rls-operator
+    type: application
+    urls:
+    - https://github.com/snapp-incubator/contour-global-ratelimit-operator/releases/download/rls-operator-0.1.0/rls-operator-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-11-20T09:53:40.086533737Z"
