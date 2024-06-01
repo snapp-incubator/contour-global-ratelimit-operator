@@ -31,6 +31,10 @@ type RateLimit struct {
 	RequestsPerUnit string
 }
 
+const (
+	genericKeyRemoteAddress = "remote_address"
+)
+
 // ExtractDescriptorsFromHTTPProxy extracts rate limit descriptors from an HTTPProxy.
 func ExtractDescriptorsFromHTTPProxy(httpProxy *contourv1.HTTPProxy) (hasRateLimitConfig bool, policies HTTPProxyGlobalRateLimitPolicy, err error) {
 	// Initialize the global rate limit policy
@@ -63,7 +67,7 @@ func extractDescriptorsFromGlobalRateLimitPolicy(policy *contourv1.GlobalRateLim
 	for _, contourDescriptor := range policy.Descriptors {
 		var entryDescriptor Descriptor
 		var limit RateLimit
-		for i, entry := range contourDescriptor.Entries {
+		for i, entry := range contourDescriptor.Entries[:2] {
 			descriptor, rateLimit, err := extractDescriptorFromEntry(entry, name, namespace)
 			if err != nil {
 				return descriptors, err
@@ -123,6 +127,14 @@ func extractDescriptorFromEntry(entry contourv1.RateLimitDescriptorEntry, name s
 func extractDescriptorFromGenericKey(genericKey *contourv1.GenericKeyDescriptor, name string, namespace string) (Descriptor, RateLimit, error) {
 	key := genericKey.Key
 	val := genericKey.Value
+
+	if key == genericKeyRemoteAddress {
+		return Descriptor{
+			Key:   key,
+			Value: val,
+		}, RateLimit{}, nil
+	}
+
 	if !isGenericKeyContainNameNamespace(key, name, namespace) {
 		err := fmt.Errorf("%v is not valid", key)
 		return Descriptor{}, RateLimit{}, err
